@@ -100,28 +100,95 @@ HCURSOR CTestServerDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CTestServerDlg::AcceptProcess(SOCKET param_h_socket) {
+	if (MAX_CLIENT_COUNT > m_client_count) {
+		SOCKADDR_IN client_addr;
+		int sockaddr_in_size = sizeof(client_addr);
 
+		mh_client_list[m_client_count] = accept(param_h_socket, (SOCKADDR*)&client_addr, &sockaddr_in_size);
+
+		WSAAsyncSelect(mh_client_list[m_client_count], m_hWnd, 11251, FD_READ | FD_CLOSE);
+
+		m_client_count++;
+
+		CString ip_address;
+		ip_address = inet_ntoa(client_addr.sin_addr);
+
+		MessageBox(ip_address, L"새로운 클라이언트가 접속했습니다.", MB_OK);
+	}
+}
+
+void CTestServerDlg::ClientCloseProcess(SOCKET param_h_socket, char param_force_flag) {
+	if (param_force_flag == 1) {
+		LINGER temp_linger = { TRUE, 0 }; 
+		setsockopt(param_h_socket, SOL_SOCKET, SO_LINGER, (char*)&temp_linger, sizeof(temp_linger));
+	}
+
+	closesocket(param_h_socket);
+
+	for (int i = 0; i < m_client_count; i++) {
+		if (mh_client_list[i] == param_h_socket) {
+			m_client_count--;
+
+			if (i != m_client_count) {
+				mh_client_list[i] = mh_client_list[m_client_count];
+			}
+		}
+	}
+}
 
 LRESULT CTestServerDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
 	if (11250 == message) {
-		if (MAX_CLIENT_COUNT > m_client_count) {
-			SOCKET h_socket = (SOCKET)wParam;	//mh_listen_socket 핸들값과 동일.
+		AcceptProcess((SOCKET)wParam);
+	}
+	else if (11251 == message) {
+		SOCKET h_socket = (SOCKET)wParam;
 
-			SOCKADDR_IN client_addr;
-			int sockaddr_in_size = sizeof(client_addr);
+		if (WSAGETSELECTEVENT(lParam) == FD_READ) {
+			WSAAsyncSelect(h_socket, m_hWnd, 11251, FD_CLOSE);
+			char key, network_message_id;
+			recv(h_socket, &key, 1, 0);
 
-			mh_client_list[m_client_count] = accept(h_socket, (SOCKADDR*)&client_addr, &sockaddr_in_size);
-			
-			WSAAsyncSelect(mh_client_list[m_client_count], m_hWnd, 11251, FD_READ | FD_CLOSE);
-			
-			m_client_count++;
+			if (key == 27) {
+				int current_size, total_size = 0, retry_count = 0;
+				unsigned short int body_size;
+				recv(h_socket, (char*)&body_size, sizeof(body_size), 0);
+				recv(h_socket, &network_message_id, 1, 0); 
 
-			CString ip_address;
-			ip_address = inet_ntoa(client_addr.sin_addr);
+				if (body_size > 0) {
+					char* p_body_size = new char[body_size];
 
-			MessageBox(ip_address, L"새로운 클라이언트가 접속했습니다.", MB_OK);
+					while (total_size < body_size) {
+						current_size = recv(h_socket, p_body_size + total_size, body_size - total_size, 0);
+
+						if (current_size == SOCKET_ERROR) {
+							retry_count++;
+							Sleep(50);
+							if (retry_count > 5) break;
+						}
+						else {
+							retry_count = 0;
+							total_size += current_size;
+						}
+					}
+
+					if (network_message_id == 1) {
+						//실제로 클라이언트가 보내준 데이터를 처리(p_body_size)
+					}
+
+					delete[] p_body_size;
+				}
+
+				WSAAsyncSelect(h_socket, m_hWnd, 11251, FD_CLOSE | FD_READ);
+			}
+			else {
+				ClientCloseProcess(h_socket, 1);
+			}
+		}
+		else {	//FD_CLOSE
+			ClientCloseProcess(h_socket, 0);
 		}
 	}
 

@@ -17,6 +17,9 @@ private:
 public:
 	CTestServerDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
 
+	void AcceptProcess(SOCKET param_h_socket);
+	void ClientCloseProcess(SOCKET param_h_socket, char param_force_flag);
+
 // 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_TESTSERVER_DIALOG };
