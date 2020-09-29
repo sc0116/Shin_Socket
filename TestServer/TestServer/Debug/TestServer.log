@@ -1,0 +1,12 @@
+﻿  pch.cpp
+  TestServer.cpp
+  TestServerDlg.cpp
+C:\GitHub\Socket\TestServer\TestServer\TestServerDlg.cpp(62,1): warning C4996: 'WSAAsyncSelect': Use WSAEventSelect() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\WinSock2.h(2680): message : 'WSAAsyncSelect' 선언을 참조하십시오.
+C:\GitHub\Socket\TestServer\TestServer\TestServerDlg.cpp(117,1): warning C4996: 'WSAAsyncSelect': Use WSAEventSelect() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\WinSock2.h(2680): message : 'WSAAsyncSelect' 선언을 참조하십시오.
+C:\GitHub\Socket\TestServer\TestServer\TestServerDlg.cpp(122,1): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\WinSock2.h(1849): message : 'inet_ntoa' 선언을 참조하십시오.
+  코드를 생성하고 있습니다...
+  LINK : C:\GitHub\Socket\TestServer\Debug\TestServer.exe을(를) 찾을 수 없거나 마지막 증분 링크에 의해 빌드되지 않았습니다. 전체 링크를 수행하고 있습니다.
+  TestServer.vcxproj -> C:\GitHub\Socket\TestServer\Debug\TestServer.exe
